@@ -22,7 +22,7 @@ extern "C"
 #include <peiskernel/peiskernel_mt.h>
 }
 
-#define CAM_PEIS_ID 111
+#define CAM_PEIS_ID 9898
 
 
 namespace cam_interface {

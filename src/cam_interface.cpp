@@ -273,22 +273,6 @@ doro_msgs::TableObject getObjectSignatureFromCAM (const std::string& object_name
 	doro_msgs::TableObject table_object;
 	table_object.id = object_name;
 
-	/* Naive method //
-			table_object.centroid = getObjectPositionFromCAM(*it, tf_listener_).point;
-			table_object.color = getObjectColorFromCAM(*it);
-			std::vector <double> tol = getObjectPositionToleranceFromCAM(*it);
-
-
-			if(tol.size() == 3)
-			{
-				table_object.centroid_tolerance.x = tol[0];
-				table_object.centroid_tolerance.y = tol[1];
-				table_object.centroid_tolerance.z = tol[2];
-			}
-
-			table_object.cluster_size = getObjectSizeFromCAM(*it);
-	 */
-
 	PeisTuple abstract_tuple1, abstract_tuple2;
 	peiskmt_initAbstractTuple(&abstract_tuple1);
 	peiskmt_initAbstractTuple(&abstract_tuple2);
