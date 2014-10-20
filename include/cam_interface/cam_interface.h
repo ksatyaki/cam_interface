@@ -10,7 +10,6 @@
 
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
-#include <tf/tf.h>
 #include <string>
 #include <vector>
 #include <geometry_msgs/PointStamped.h>
@@ -26,6 +25,12 @@ extern "C"
 
 
 namespace cam_interface {
+
+/**
+ * Subscribe to all things in CAM.
+ */
+void subscribeToCAM();
+
 /**
  * Retrive the signature of all objects from cam and return them in a doro_msgs::TableObjectArray.
  */

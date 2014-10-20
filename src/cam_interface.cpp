@@ -58,8 +58,6 @@ std::vector<double> getItFromCAM(std::string key)
 {
 	int CAM_peis_id = CAM_PEIS_ID;
 
-	PeisSubscriberHandle c = peiskmt_subscribe(CAM_peis_id, key.c_str());
-
 	PeisTuple *position_tuple = peiskmt_getTuple(CAM_peis_id, key.c_str(), PEISK_KEEP_OLD);
 	ROS_INFO("Fetching item from CAM: %s", key.c_str());
 	while(!position_tuple)
@@ -71,7 +69,6 @@ std::vector<double> getItFromCAM(std::string key)
 		usleep(100000);
 	}
 
-	peiskmt_unsubscribe(c);
 	return extractParams(position_tuple->data);
 }
 
@@ -163,6 +160,25 @@ geometry_msgs::PointStamped transformPointToBaseLink (std::vector<double> point_
 	return object_position;
 }
 
+void subscribeToCAM()
+{
+	printf("\n[CAM_INTERFACE]: Subscribing to CAM.\n");
+	PeisTuple abstract_tuple1, abstract_tuple2;
+
+	peiskmt_initAbstractTuple(&abstract_tuple1);
+	peiskmt_initAbstractTuple(&abstract_tuple2);
+
+	peiskmt_setTupleName(&abstract_tuple1, std::string("*.*").c_str());
+	peiskmt_setTupleName(&abstract_tuple2, std::string("*.*.*").c_str());
+
+	abstract_tuple1.owner = CAM_PEIS_ID;
+	abstract_tuple2.owner = CAM_PEIS_ID;
+
+	peiskmt_subscribe(CAM_PEIS_ID, "kernel.all_keys");
+	peiskmt_subscribeByAbstract(&abstract_tuple1);
+	peiskmt_subscribeByAbstract(&abstract_tuple2);
+}
+
 doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf::TransformListener>& tf_listener_)
 {
 	if(!peisk_isRunning())
@@ -171,9 +187,6 @@ doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf:
 		exit(-1);
 	}
 	doro_msgs::TableObjectArray __objects;
-
-
-	PeisSubscriberHandle c = peiskmt_subscribe(CAM_PEIS_ID, "kernel.all-keys");
 
 	PeisTuple *p = peiskmt_getTuple(CAM_PEIS_ID, "kernel.all-keys", PEISK_KEEP_OLD);
 	printf("Wait for tuples from CAM");
@@ -185,9 +198,6 @@ doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf:
 		printf("\b");
 		usleep(100000);
 	}
-	//printf("Got Tuples, now we decompose.\n");
-	peiskmt_unsubscribe(c);
-	//printf("\n%s--\n", p->data);
 
 	std::vector <std::string> all_keys = extractTokens(p->data);
 
@@ -222,8 +232,6 @@ doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf:
 				_object_names_.push_back(object_name2);
 				printf("%s added\n", object_name2.c_str());
 			}
-			//else
-				//printf("%s NOT Added\n", object_name2.c_str());
 
 		}
 		else if(object_name1.compare(*it) != 0 && object_name2.compare(*it) == 0)
@@ -233,12 +241,9 @@ doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf:
 				_object_names_.push_back(object_name1);
 				printf("%s added\n", object_name1.c_str());
 			}
-			//else
-				//printf("%s NOT Added\n", object_name1.c_str());
 		}
 		else
 		{
-			//printf("continue\n");
 			continue;
 		}
 	}
@@ -248,19 +253,6 @@ doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf:
 	// *********************************** //
 	for(std::vector <std::string>::iterator it = _object_names_.begin(); it != _object_names_.end(); it++)
 	{
-		/* Naive method //
-		table_object.centroid = getObjectPositionFromCAM(*it, tf_listener_).point;
-		table_object.color = getObjectColorFromCAM(*it);
-		std::vector <double> tol = getObjectPositionToleranceFromCAM(*it);
-
-		if(tol.size() == 3)
-		{
-			table_object.centroid_tolerance.x = tol[0];
-			table_object.centroid_tolerance.y = tol[1];
-			table_object.centroid_tolerance.z = tol[2];
-		}
-		table_object.cluster_size = getObjectSizeFromCAM(*it);
-		*/
 		__objects.table_objects.push_back(getObjectSignatureFromCAM (*it, tf_listener_));
 	}
 
@@ -282,9 +274,6 @@ doro_msgs::TableObject getObjectSignatureFromCAM (const std::string& object_name
 
 	abstract_tuple1.owner = CAM_PEIS_ID;
 	abstract_tuple2.owner = CAM_PEIS_ID;
-
-	PeisSubscriberHandle thisSubscriber1 = peiskmt_subscribeByAbstract(&abstract_tuple1);
-	PeisSubscriberHandle thisSubscriber2 = peiskmt_subscribeByAbstract(&abstract_tuple2);
 
 	PeisTupleResultSet* tuple_set1;
 	PeisTupleResultSet* tuple_set2;
@@ -335,7 +324,6 @@ doro_msgs::TableObject getObjectSignatureFromCAM (const std::string& object_name
 		if(!peiskmt_resultSetNext(tuple_set1))
 			break;
 	}
-	peiskmt_unsubscribe(thisSubscriber1);
 
 	while(peisk_isRunning())
 	{
@@ -369,7 +357,6 @@ doro_msgs::TableObject getObjectSignatureFromCAM (const std::string& object_name
 		if(!peiskmt_resultSetNext(tuple_set2))
 			break;
 	}
-	peiskmt_unsubscribe(thisSubscriber2);
 
 	peiskmt_deleteResultSet(tuple_set1);
 	peiskmt_deleteResultSet(tuple_set2);
