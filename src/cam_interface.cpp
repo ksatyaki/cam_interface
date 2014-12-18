@@ -225,6 +225,8 @@ doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf:
 		// This is based on the assumption that a signature contains at-least a pos.geo
 		std::string object_name1 = it->substr(0, it->find(".pos.geo"));
 		std::string object_name2 = it->substr(0, it->find(".sift_descriptor"));
+		if(object_name1.find("user") != std::string::npos)
+			continue;
 		if(object_name1.compare(*it) == 0 && object_name2.compare(*it) != 0)
 		{
 			if(std::find(_object_names_.begin(), _object_names_.end(), object_name2) == _object_names_.end())
