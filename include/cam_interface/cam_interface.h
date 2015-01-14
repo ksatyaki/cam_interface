@@ -37,6 +37,11 @@ void subscribeToCAM();
 doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf::TransformListener>& tf_listener_);
 
 /**
+ * Retrive a vector of strings that contans all the dynamic object's names.
+ */
+std::vector <std::string> getAllObjectNamesFromCAM();
+
+/**
  * Retrive the signature of one object from and return it as a doro_msgs::TableObject.
  */
 doro_msgs::TableObject getObjectSignatureFromCAM (const std::string& object_name, boost::shared_ptr <tf::TransformListener>& tf_listener_);

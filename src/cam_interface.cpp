@@ -179,20 +179,19 @@ void subscribeToCAM()
 	peiskmt_subscribeByAbstract(&abstract_tuple2);
 }
 
-doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf::TransformListener>& tf_listener_)
+std::vector <std::string> getAllObjectNamesFromCAM()
 {
 	if(!peisk_isRunning())
 	{
 		printf("Error. PEIS Kernel is not running. Can't get objects from CAM.");
 		exit(-1);
 	}
-	doro_msgs::TableObjectArray __objects;
 
-	PeisTuple *p = peiskmt_getTuple(CAM_PEIS_ID, "kernel.all-keys", PEISK_KEEP_OLD);
+	PeisTuple *p = peiskmt_getTuple(CAM_PEIS_ID, "dynentity.current", PEISK_KEEP_OLD);
 	printf("Wait for tuples from CAM");
 	while(!p)
 	{
-		p = peiskmt_getTuple(CAM_PEIS_ID, "kernel.all-keys", PEISK_KEEP_OLD);
+		p = peiskmt_getTuple(CAM_PEIS_ID, "dynentity.current", PEISK_KEEP_OLD);
 		printf(".");
 		usleep(100000);
 		printf("\b");
@@ -203,13 +202,12 @@ doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf:
 
 	for(std::vector <std::string>::iterator it = all_keys.begin(); it != all_keys.end(); it++)
 	{
-		if(it->find("kernel") != std::string::npos)
+		if(it->find("user") != std::string::npos)
 		{
 			all_keys.erase(it);
 			it--;
 		}
 	}
-
 
 	// *************************** //
 	// * Extracting Object Names * //
@@ -219,14 +217,9 @@ doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf:
 
 	for(std::vector <std::string>::iterator it = all_keys.begin(); it != all_keys.end(); it++)
 	{
-		//printf("--------\n");
-		//printf("%s\n", it->c_str());
-
 		// This is based on the assumption that a signature contains at-least a pos.geo
 		std::string object_name1 = it->substr(0, it->find(".pos.geo"));
 		std::string object_name2 = it->substr(0, it->find(".sift_descriptor"));
-		if(object_name1.find("user") != std::string::npos)
-			continue;
 		if(object_name1.compare(*it) == 0 && object_name2.compare(*it) != 0)
 		{
 			if(std::find(_object_names_.begin(), _object_names_.end(), object_name2) == _object_names_.end())
@@ -249,6 +242,14 @@ doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf:
 			continue;
 		}
 	}
+	return _object_names_;
+}
+
+doro_msgs::TableObjectArray getAllObjectSignaturesFromCAM(boost::shared_ptr <tf::TransformListener>& tf_listener_)
+{
+	doro_msgs::TableObjectArray __objects;
+
+	std::vector <std::string> _object_names_ = getAllObjectNamesFromCAM();
 
 	// *********************************** //
 	// * Fetching the signature in parts * //
