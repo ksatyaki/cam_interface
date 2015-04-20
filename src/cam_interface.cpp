@@ -197,20 +197,28 @@ geometry_msgs::PointStamped transformPointToBaseLink (std::vector<double> point_
 void subscribeToCAM()
 {
 	printf("\n[CAM_INTERFACE]: Subscribing to CAM.\n");
-	PeisTuple abstract_tuple1, abstract_tuple2;
+	PeisTuple abstract_tuple1, abstract_tuple2, abstract_tuple3, abstract_tuple4;
 
 	peiskmt_initAbstractTuple(&abstract_tuple1);
 	peiskmt_initAbstractTuple(&abstract_tuple2);
+	peiskmt_initAbstractTuple(&abstract_tuple3);
+	peiskmt_initAbstractTuple(&abstract_tuple4);
 
 	peiskmt_setTupleName(&abstract_tuple1, std::string("*.*").c_str());
 	peiskmt_setTupleName(&abstract_tuple2, std::string("*.*.*").c_str());
+	peiskmt_setTupleName(&abstract_tuple3, std::string("*.*.*.*").c_str());
+	peiskmt_setTupleName(&abstract_tuple4, std::string("*.*.*.*.*").c_str());
 
 	abstract_tuple1.owner = CAM_PEIS_ID;
 	abstract_tuple2.owner = CAM_PEIS_ID;
+	abstract_tuple3.owner = CAM_PEIS_ID;
+	abstract_tuple4.owner = CAM_PEIS_ID;
 
 	peiskmt_subscribe(CAM_PEIS_ID, "kernel.all_keys");
 	peiskmt_subscribeByAbstract(&abstract_tuple1);
 	peiskmt_subscribeByAbstract(&abstract_tuple2);
+	peiskmt_subscribeByAbstract(&abstract_tuple3);
+	peiskmt_subscribeByAbstract(&abstract_tuple4);
 }
 
 std::vector <std::string> getAllObjectNamesFromCAM()
