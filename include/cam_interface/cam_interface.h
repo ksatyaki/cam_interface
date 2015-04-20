@@ -1,8 +1,24 @@
-/*
- * cam_interface.h
+/**
+ * @file   cam_interface.h
+ * @author Chittaranjan S Srinivas
+ * 
+ * @brief  This file contains prototypes for functions that communicate
+ *         with CAM.
+ *     
+ * Copyright (C) 2015  Chittaranjan Srinivas Swaminathan
  *
- *  Created on: Oct 6, 2014
- *      Author: ace
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
 #ifndef CAM_INTERFACE_H_
@@ -26,10 +42,26 @@ extern "C"
 
 namespace cam_interface {
 
+/** 
+ * Check if an object is in the CAM. 
+ * @param object_name Name of the object that you wish to check.
+ * @return true if the object is in the CAM. False otherwise.
+ */
+bool isObjectInCAM(std::string object_name);
+
 /**
  * Subscribe to all things in CAM.
  */
 void subscribeToCAM();
+
+/** 
+ *  
+ * @param object_name The name of the object whose reachable pose you want to get.
+ * @param tf_listener_ The tf_listener that would be used with this operation.
+ * 
+ * @return The reachable pose for given object.
+ */
+geometry_msgs::PointStamped getObjectReachablePositionFromCAM(std::string object_name, boost::shared_ptr <tf::TransformListener>& tf_listener_);
 
 /**
  * Retrive the signature of all objects from cam and return them in a doro_msgs::TableObjectArray.

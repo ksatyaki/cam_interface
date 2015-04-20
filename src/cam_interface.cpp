@@ -1,13 +1,36 @@
-/*
- * cam_interface.cpp
+/**
+ * @file   cam_interface.cpp
+ * @author Chittaranjan S Srinivas
+ * 
+ * @brief  This file defines the functions from cam_interface.h
+ *     
+ * Copyright (C) 2015  Chittaranjan Srinivas Swaminathan
  *
- *  Created on: Oct 6, 2014
- *      Author: ace
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
+
 
 #include <cam_interface/cam_interface.h>
 
 namespace cam_interface {
+
+bool isObjectInCAM(std::string object_name)
+{
+	std::vector <std::string> _object_names_ = getAllObjectNamesFromCAM();
+
+	return (std::find(_object_names_.begin(), _object_names_.end(), object_name) != _object_names_.end());
+}
 
 std::vector<double> extractParams(const char p[])
 {
@@ -59,13 +82,13 @@ std::vector<double> getItFromCAM(std::string key)
 	int CAM_peis_id = CAM_PEIS_ID;
 
 	PeisTuple *position_tuple = peiskmt_getTuple(CAM_peis_id, key.c_str(), PEISK_KEEP_OLD);
-	ROS_INFO("Fetching item from CAM: %s", key.c_str());
+	//ROS_INFO("Fetching item from CAM: %s", key.c_str());
 	while(!position_tuple)
 	{
 		position_tuple = peiskmt_getTuple(CAM_peis_id, key.c_str(), PEISK_KEEP_OLD);
-		printf(".");
+		//printf(".");
 		usleep(100000);
-		printf("\b");
+		//printf("\b");
 		usleep(100000);
 	}
 
@@ -120,6 +143,17 @@ geometry_msgs::PointStamped getObjectPositionFromCAM(std::string object_name, bo
 	}
 
 	return transformPointToBaseLink(getItFromCAM (object_name + ".pos.geo"), tf_listener_);
+}
+
+geometry_msgs::PointStamped getObjectReachablePositionFromCAM(std::string object_name, boost::shared_ptr <tf::TransformListener>& tf_listener_)
+{
+	if(!peisk_isRunning())
+	{
+		printf("Error. PEIS Kernel is not running. Can't get objects from CAM.");
+		exit(-1);
+	}
+
+	return transformPointToBaseLink(getItFromCAM (object_name + ".pos.geo.reachable"), tf_listener_);
 }
 
 geometry_msgs::PointStamped transformPointToBaseLink (std::vector<double> point_in_map, boost::shared_ptr <tf::TransformListener>& tf_listener_)
@@ -225,7 +259,7 @@ std::vector <std::string> getAllObjectNamesFromCAM()
 			if(std::find(_object_names_.begin(), _object_names_.end(), object_name2) == _object_names_.end())
 			{
 				_object_names_.push_back(object_name2);
-				printf("%s added\n", object_name2.c_str());
+				//printf("%s added\n", object_name2.c_str());
 			}
 
 		}
@@ -234,7 +268,7 @@ std::vector <std::string> getAllObjectNamesFromCAM()
 			if(std::find(_object_names_.begin(), _object_names_.end(), object_name1) == _object_names_.end())
 			{
 				_object_names_.push_back(object_name1);
-				printf("%s added\n", object_name1.c_str());
+				//printf("%s added\n", object_name1.c_str());
 			}
 		}
 		else
@@ -288,7 +322,7 @@ doro_msgs::TableObject getObjectSignatureFromCAM (const std::string& object_name
 	peiskmt_resultSetReset(tuple_set2);
 
 	peiskmt_getTuplesByAbstract(&abstract_tuple1, tuple_set1);
-	printf("\n### Getting object.* tuples for object %s", object_name.c_str());
+	//printf("\n### Getting object.* tuples for object %s", object_name.c_str());
 	while(!peiskmt_resultSetNext(tuple_set1))
 	{
 		peiskmt_resultSetReset(tuple_set1);
@@ -300,7 +334,7 @@ doro_msgs::TableObject getObjectSignatureFromCAM (const std::string& object_name
 	}
 
 	peiskmt_getTuplesByAbstract(&abstract_tuple2, tuple_set2);
-	printf("\n### Getting object.*.* tuples for object %s", object_name.c_str());
+	//printf("\n### Getting object.*.* tuples for object %s", object_name.c_str());
 	while(!peiskmt_resultSetNext(tuple_set2))
 	{
 		peiskmt_resultSetReset(tuple_set2);
