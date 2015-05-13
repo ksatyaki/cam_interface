@@ -145,15 +145,26 @@ geometry_msgs::PointStamped getObjectPositionFromCAM(std::string object_name, bo
 	return transformPointToBaseLink(getItFromCAM (object_name + ".pos.geo"), tf_listener_);
 }
 
-geometry_msgs::PointStamped getObjectReachablePositionFromCAM(std::string object_name, boost::shared_ptr <tf::TransformListener>& tf_listener_)
+std::vector <double> getObjectReachablePositionFromCAM(std::string object_name)
 {
 	if(!peisk_isRunning())
 	{
 		printf("Error. PEIS Kernel is not running. Can't get objects from CAM.");
 		exit(-1);
 	}
+	std::vector <double> pt_world_vector;
+	if(object_name.find("user") != std::string::npos
+	   || object_name.find("table") != std::string::npos) {
+	  printf("\nReturning reachable position.");
+	  pt_world_vector = getItFromCAM (object_name + ".pos.geo.reachable");
+	}
+	else {
+	  printf("\nReturning location.");
+	  pt_world_vector = getItFromCAM (object_name + ".pos.geo");
+	}
+	  
 
-	return transformPointToBaseLink(getItFromCAM (object_name + ".pos.geo.reachable"), tf_listener_);
+	return pt_world_vector;
 }
 
 geometry_msgs::PointStamped transformPointToBaseLink (std::vector<double> point_in_map, boost::shared_ptr <tf::TransformListener>& tf_listener_)

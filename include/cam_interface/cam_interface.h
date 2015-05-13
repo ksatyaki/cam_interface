@@ -61,7 +61,7 @@ void subscribeToCAM();
  * 
  * @return The reachable pose for given object.
  */
-geometry_msgs::PointStamped getObjectReachablePositionFromCAM(std::string object_name, boost::shared_ptr <tf::TransformListener>& tf_listener_);
+ std::vector<double> getObjectReachablePositionFromCAM(std::string object_name);
 
 /**
  * Retrive the signature of all objects from cam and return them in a doro_msgs::TableObjectArray.
